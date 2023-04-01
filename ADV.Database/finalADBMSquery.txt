@@ -1,0 +1,58 @@
+1.Find the details of member whose U_name='' and pas=''.
+
+select * from U_login l,member m where m.m_id=l.m_id and l.U_name='abid' and l.U_pass='1234';
+
+2.select All problem setted by SARZILA JISHA.
+
+select p.P_name,ps.Ps_name from problem p,problem_setter ps where p.ps_id=ps.ps_id and ps.PS_name='SARZILA JISHA';
+
+3.show details of the member who have maximum submissions.
+
+select * from member where M_ID in (
+select M_ID from submission group by M_ID having count(*)=(
+select max(count(*)) from submission group by M_ID));
+
+
+4.Find the category have the most number on problem.
+
+select cname from category where c_id in(
+select c_id from problem group by c_id having count(*)=(
+select max(count(*)) from problem group by c_id));
+
+
+5.select problem setted after abids last submissions.
+
+select * from problem where p_assigned_date>(
+select max(S_date) from submission s ,member m where s.M_id=m.M_ID and m.M_NAME='abid hassan') ;
+
+
+6.Show the info of member and problem whose submissions are accepted.
+
+select M.M_ID, M.M_NAME, S.P_ID, P.P_NAME FROM MEMBER M, SUBMISSION S, PROBLEM P 
+where M.M_ID=S.M_ID AND S.P_ID = P.P_ID AND S.STATUS = 1;
+
+
+7.Find the problem setter and problem info which problem is not solved.
+
+select p.p_id,p.p_name, ps.ps_id, ps.ps_name from problem p, problem_setter ps, submission s 
+where p.p_id = s.p_id and p.ps_id = ps.ps_id and s.status = 0 
+group by p.p_id, p.p_name, ps.ps_id, ps.ps_name;
+
+
+8.Find the info of the problems and volume number and member name which is solved by C# or php and problem is accepted.
+
+select  p.p_id,p.p_name, ps.volume_no,m.m_name from  submission s,problem p, problem_set ps ,member m
+where p.p_id = s.p_id and ps.VOLUME_NO = p.VOLUME_NO and s.m_id=m.m_id and m.M_language in ('c#','php') and s.status=1;
+
+
+9. Find the info of member who has successfully solved 'RUBABA RAHMAN's problem.
+
+select m.m_id, m.m_name from member m, problem p, submission s, problem_setter ps 
+where m.m_id = s.m_id and s.p_id = p.p_id and s.status = 1 
+and p.ps_id = ps.ps_id and ps.ps_name = 'RUBABA RAHMAN';
+
+10. count last years total monthly submission.
+
+select to_char(S_DATE, 'Month') as MONTH,count(*) as Total_Submissions from submission 
+where extract(year from S_DATE)=extract(year from sysdate) 
+group by to_char(S_DATE, 'Month');

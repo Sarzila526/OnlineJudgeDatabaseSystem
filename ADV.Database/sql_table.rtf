@@ -1,0 +1,98 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2638
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 CREATE TABLE member\
+       (m_id NUMBER(2) CONSTRAINT PK_member PRIMARY KEY,\
+	m_language VARCHAR2(14) ,\
+	m_name VARCHAR2(17),\
+             join_date DATE) ;\
+\
+\
+CREATE TABLE U_login\
+       (login_id NUMBER(2) CONSTRAINT PK_login PRIMARY KEY,\
+	user_name VARCHAR2(14) ,\
+	password VARCHAR2(17),\
+             role VARCHAR2(14),\
+       m_id NUMBER(2) CONSTRAINT FK_m_id REFERENCES member ) ;\
+\
+\
+//sequence for member_id \
+CREATE SEQUENCE m_id_seq\
+    INCREMENT BY 1;\
+\
+//sequence for login id\
+CREATE SEQUENCE l_id_seq\
+    INCREMENT BY 1;\
+\
+//data inserted from website\
+//insert data\
+\
+\
+CREATE TABLE Category\
+       (C_id NUMBER(2) CONSTRAINT PK_Category PRIMARY KEY,\
+	Cname VARCHAR2(14) \
+	) ;\
+\
+desc category\
+\
+INSERT INTO Category VALUES (01,'STACK');\
+INSERT INTO Category VALUES (02,'QUEUE');\
+INSERT INTO Category VALUES (03,'SORTING');\
+INSERT INTO Category VALUES (04,'GRAPH');\
+INSERT INTO Category VALUES (05,'TREE');\
+\
+\
+SELECT * FROM CATEGORY;\
+\
+\
+CREATE TABLE PROBLEM_SET(VOLUME_NO NUMBER) ;\
+\
+/sequence for volume\
+CREATE SEQUENCE VOL_seq\
+    INCREMENT BY 1;\
+\
+INSERT INTO PROBLEM_SET VALUES(VOL_seq.NEXTVAL);   //5 TIMES\
+\
+\
+SELECT * FROM PROBLEM_SET;\
+\
+\
+\
+CREATE TABLE PROBLEM_SETTER( PS_id NUMBER(2) CONSTRAINT PK_PROBLEM_SETTER PRIMARY KEY,\
+	PS_NAME VARCHAR2(14) \
+	) ;\
+\
+INSERT INTO PROBLEM_SETTER VALUES (31,'ABID HASSAN');\
+INSERT INTO PROBLEM_SETTER VALUES (32,'TAHSIN HASAN');\
+INSERT INTO PROBLEM_SETTER VALUES (33,'RUBABA RAHMAN');\
+INSERT INTO PROBLEM_SETTER VALUES (34,'NUBAH SURRAT');\
+INSERT INTO PROBLEM_SETTER VALUES (35,'SARZILA JISHA');\
+\
+\
+SELECT * FROM PROBLEM_SETTER\
+\
+\
+CREATE TABLE problem\
+       (p_id NUMBER(2) CONSTRAINT PK_problem PRIMARY KEY,\
+	volume_no number,\
+       PS_id NUMBER(2) CONSTRAINT FK_ps_id REFERENCES Problem_setter ,\
+       c_id number(2)  CONSTRAINT FK_c_id REFERENCES category,\
+       P_assigned_date date\
+                        ) ;\
+\
+//insert data to problem\
+\
+\
+CREATE TABLE submission\
+       (s_id NUMBER(2) CONSTRAINT PK_submission PRIMARY KEY,\
+        M_id number(2),\
+       p_id number(2)  CONSTRAINT FK_p_id REFERENCES problem,\
+       s_date date,\
+       status number(2)\
+                        ) ;\
+\
+/insert data to submission}

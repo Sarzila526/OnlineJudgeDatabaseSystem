@@ -1,0 +1,299 @@
+Table Creation:
+
+CREATE TABLE member
+       (m_id NUMBER(2) CONSTRAINT PK_member PRIMARY KEY,
+	m_language VARCHAR2(14) ,
+	m_name VARCHAR2(17),
+             join_date DATE) ;
+
+
+
+CREATE TABLE U_login
+       (login_id NUMBER(2) CONSTRAINT PK_login PRIMARY KEY,
+	user_name VARCHAR2(14) ,
+	password VARCHAR2(17),
+             role VARCHAR2(14),
+       m_id NUMBER(2) CONSTRAINT FK_m_id REFERENCES member ) ;
+
+
+
+//sequence for member_id 
+
+CREATE SEQUENCE m_id_seq
+    INCREMENT BY 1;
+
+
+//sequence for login id
+
+CREATE SEQUENCE l_id_seq
+    INCREMENT BY 1;
+
+
+
+CREATE TABLE Category
+       (C_id NUMBER(2) CONSTRAINT PK_Category PRIMARY KEY,
+	Cname VARCHAR2(14) 
+	) ;
+
+
+CREATE TABLE PROBLEM_SET(VOLUME_NO NUMBER) ;
+
+//sequence for volume
+
+CREATE SEQUENCE VOL_seq
+    INCREMENT BY 1;
+
+
+
+
+CREATE TABLE PROBLEM_SETTER ( 
+PS_id NUMBER(2) CONSTRAINT PK_PROBLEM_SETTER PRIMARY KEY,
+	PS_NAME VARCHAR2(14) 
+	) ;
+
+
+CREATE TABLE problem
+       (p_id NUMBER(2) CONSTRAINT PK_problem PRIMARY KEY,
+	volume_no number,
+       PS_id NUMBER(2) CONSTRAINT FK_ps_id REFERENCES Problem_setter ,
+       c_id number(2)  CONSTRAINT FK_c_id REFERENCES category,
+       P_assigned_date date, p_NAME VARCHAR2(50)
+                        ) ;
+
+
+
+CREATE TABLE submission
+       (s_id NUMBER(2) CONSTRAINT PK_submission PRIMARY KEY,
+        M_id number(2),
+       p_id number(2)  CONSTRAINT FK_p_id REFERENCES problem,
+       s_date date,
+       status number(2)
+                        ) ;
+
+SQL Queries:
+1.Find the details of member whose U_name='' and pas=''.
+
+select * from U_login l,member m where m.m_id=l.m_id and l.U_name='abid' and l.U_pass='1234';
+
+2.select All problem setted by SARZILA JISHA.
+
+select p.P_name,ps.Ps_name from problem p,problem_setter ps where p.ps_id=ps.ps_id and ps.PS_name='SARZILA JISHA';
+
+3.show details of the member who have maximum submissions.
+
+select * from member where M_ID in (
+select M_ID from submission group by M_ID having count(*)=(
+select max(count(*)) from submission group by M_ID));
+
+
+4.Find the category have the most number on problem.
+
+select cname from category where c_id in(
+select c_id from problem group by c_id having count(*)=(
+select max(count(*)) from problem group by c_id));
+
+
+5.select problem setted after abids last submissions.
+
+select * from problem where p_assigned_date>(
+select max(S_date) from submission s ,member m where s.M_id=m.M_ID and m.M_NAME='abid hassan') ;
+
+
+6.Show the info of member and problem whose submissions are accepted.
+
+select M.M_ID, M.M_NAME, S.P_ID, P.P_NAME FROM MEMBER M, SUBMISSION S, PROBLEM P 
+where M.M_ID=S.M_ID AND S.P_ID = P.P_ID AND S.STATUS = 1;
+
+
+7.Find the problem setter and problem info which problem is not solved.
+
+select p.p_id,p.p_name, ps.ps_id, ps.ps_name from problem p, problem_setter ps, 
+submission s 
+where p.p_id = s.p_id and p.ps_id = ps.ps_id and s.status = 0 
+group by p.p_id, p.p_name, ps.ps_id, ps.ps_name;
+
+
+
+
+8. Find the info of the problems and volume number and member name which is solved by C# or php and problem is accepted.
+
+select  p.p_id,p.p_name, ps.volume_no,m.m_name from  submission s,problem p, problem_set ps ,member m
+where p.p_id = s.p_id and ps.VOLUME_NO = p.VOLUME_NO and s.m_id=m.m_id and m.M_language in ('c#','php') and s.status=1;
+
+
+9. Find the info of member who has successfully solved 'RUBABA RAHMAN's problem.
+
+select m.m_id, m.m_name from member m, problem p, submission s, problem_setter ps 
+where m.m_id = s.m_id and s.p_id = p.p_id and s.status = 1 
+and p.ps_id = ps.ps_id and ps.ps_name = 'RUBABA RAHMAN';
+
+10. count last years total monthly submission.
+
+select to_char(S_DATE, 'Month') as MONTH,count(*) as Total_Submissions from submission 
+where extract(year from S_DATE)=extract(year from sysdate) 
+group by to_char(S_DATE, 'Month');
+
+
+plsql:
+create or replace function valid_category(PC_ID category.C_ID%type)
+return boolean
+is
+x number(2);
+begin
+select count(*) into x from category where C_ID=PC_ID;
+if(x=1) then
+return true;
+else
+return false;
+end if;
+END;
+
+
+create or replace function valid_PSetter(PPS_ID problem_setter.PS_ID%type)
+return boolean
+is
+y number(2);
+begin
+select count(*) into y from problem_setter where ps_ID=pps_ID;
+if(y=1) then
+return true;
+else
+return false;
+end if;
+END;
+
+create or replace function valid_volume(pvolume_no problem_set.volume_no%type)
+return boolean
+is
+z number(2);
+begin
+select count(*) into z from problem_set where volume_no=pvolume_no;
+if(z=1) then
+return true;
+else
+return false;
+end if;
+END;
+
+
+create or replace procedure Add_problem(pp_name in problem.p_name%type,pps_ID in problem.PS_ID%type,pc_ID in problem.C_ID%type,pvolume_no in problem.volume_no%type)
+is
+begin
+if(valid_category(pc_ID) and valid_PSetter(PPS_ID) and valid_volume(pvolume_no) )
+then
+insert into problem values(HR.p_id_seq.nextval,pvolume_no,pps_ID,pc_ID,to_date(sysdate,'dd-mm-yyyy'),pp_name);
+dbms_output.put_line('successfull');
+else
+raise_application_error(-20226,'Invalid category or problem or volume ID');
+end if;
+end;
+
+begin
+Add_problem('abcd',3,3,4);
+end;
+
+select * from problem_set;
+select * from problem;
+
+CREATE SEQUENCE p_id_seq
+    INCREMENT BY 1;
+
+SELECT p_id_seq.NEXTVAL  FROM DUAL;
+SELECT sysdate  FROM DUAL;
+
+raise_application_error(-20226,'Invalid flight id');
+
+
+create or replace function valid_member(PM_ID submission.M_ID%type)
+return boolean
+is
+p number(2);
+begin
+select count(*) into p from submission where m_id=PM_ID;
+if(p=1) then
+return true;
+else
+return false;
+end if;
+END;
+
+
+create or replace function valid_problem(PP_ID submission.M_ID%type)
+return boolean
+is
+o number(2);
+begin
+select count(*) into o from submission where p_id=PP_ID;
+if(o=1) then
+return true;
+else
+return false;
+end if;
+END;
+
+
+create or replace procedure submit_problem(pp_name in problem.p_name%type,pps_ID in problem.PS_ID%type,pc_ID in problem.C_ID%type,pvolume_no in problem.volume_no%type)
+
+is
+begin
+if(valid_problem(5) and valid_member(19))
+then
+--insert into problem values(HR.p_id_seq.nextval,pvolume_no,pps_ID,pc_ID,to_date(sysdate,'dd-mm-yyyy'),pp_name);
+dbms_output.put_line('successfull');
+else
+raise_application_error(-20228,'Invalid member or problem ID');
+end if;
+end;
+
+
+begin
+submit_problem();
+end;
+1.
+CREATE OR REPLACE TRIGGER update_status 
+BEFORE INSERT OR UPDATE ON submission for each row
+
+BEGIN
+
+IF :new.status NOT IN(0,1)
+then
+raise_application_error(-20240,’status can be 0 or 1’);
+END IF;
+END;
+
+2.
+CREATE OR REPLACE TRIGGER update_member
+BEFORE UPDATE ON member for each row
+
+BEGIN
+
+IF :new.M_language IS NULL
+then
+raise_application_error(-20241,'Must have to know a PL language');
+END IF;
+END;
+
+3. 
+CREATE OR REPLACE TRIGGER update_problem 
+BEFORE INSERT OR UPDATE ON submission for each row
+
+BEGIN
+
+IF :new.answer IS NULL
+then
+raise_application_error(-20241,'ANSWER BEFORE SUBMIT');
+END IF;
+END;
+
+4.
+CREATE OR REPLACE TRIGGER ADD_problem 
+BEFORE INSERT OR UPDATE ON problem for each row
+
+BEGIN
+
+IF :new.ps_id IS NULL
+then
+raise_application_error(-20241,'who is problem setter');
+END IF;
+END;
+
